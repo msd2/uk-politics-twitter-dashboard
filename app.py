@@ -1,10 +1,12 @@
 import streamlit as st
 from google.cloud import storage
+from google.oauth2 import service_account
 import matplotlib.pyplot as plt
 import pandas as pd
 from urllib.request import Request, urlopen
 from io import StringIO, BytesIO
-
+import os
+import json
 
 
 def read_from_bucket(bucket):
@@ -44,9 +46,13 @@ def return_politician_handles(option='list'):
 # read_from_bucket = st.cache(read_from_bucket)
 return_politician_handles =  st.cache(return_politician_handles)
 
+credentials_raw = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+service_account_info = json.loads(credentials_raw)
+credentials = service_account.Credentials.from_service_account_info(
+    service_account_info)
 
 bucket_name = 'uk-gov-tweets-14289'
-storage_client = storage.Client()#.from_service_account_json('/Users/mdunford/data_science/ticker-twitter/data_collection/creds.json')
+storage_client = storage.Client(credentials=credentials)#.from_service_account_json('/Users/mdunford/data_science/ticker-twitter/data_collection/creds.json')
 bucket = storage_client.get_bucket(bucket_name)
 
 data = read_from_bucket(bucket=bucket)
